@@ -48,10 +48,30 @@
             android:text="@string/next_button"
             />
     </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+    <Button
+        android:id="@+id/moreSeconds_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+5 seconds" />
+
+    <Button
+       android:id="@+id/lessSeconds_button"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="-5 seconds" />
+
+    </LinearLayout>
+
 
     <Button
         android:id="@+id/import_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/import_button" />
+
+
 </LinearLayout>
