@@ -1,77 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="24dp">
 
+    <!--Timer -->
+    <TextView
+        android:id="@+id/TimerVar"
+        android:layout_width="422dp"
+        android:layout_height="115dp"
+        tools:text=""
+        android:gravity="center"
+        android:textColor="@android:color/black"
+        android:textSize="40sp"
+    />
+
+    <!-- Question Text -->
     <TextView
         android:id="@+id/question_text_view"
         android:layout_width="400dp"
-        android:layout_height="200dp"
+        android:layout_height="104dp"
         android:gravity="center"
         android:padding="24dp"
+        android:textColor="@android:color/black"
+        android:textSize="18sp"
         tools:text="@string/question_australia" />
 
+    <!-- RadioGroup with RadioButtons -->
+    <GridLayout
+        android:id="@+id/rgOptions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:rowCount="2"
+        android:orientation="horizontal"
+        android:layout_marginTop="25dp">
+
+        <RadioButton
+            android:id="@+id/AButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/AButton" />
+
+        <RadioButton
+            android:id="@+id/BButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/BButton" />
+
+        <RadioButton
+            android:id="@+id/CButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/CButton" />
+
+        <RadioButton
+            android:id="@+id/DButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/DButton" />
+    </GridLayout>
+
+    <!-- Navigation Buttons -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
 
-        <Button
-            android:id="@+id/true_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/true_button" />
-
-        <Button
-            android:id="@+id/false_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/false_button" />
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
         <Button
             android:id="@+id/back_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/back_button"
-            />
+            android:text="@string/back_button" />
+
         <Button
             android:id="@+id/next_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/next_button"
-            />
+            android:layout_marginStart="16dp" />
     </LinearLayout>
+
+    <!-- Timer Adjustment Buttons -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-    <Button
-        android:id="@+id/moreSeconds_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="+5 seconds" />
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
 
-    <Button
-       android:id="@+id/lessSeconds_button"
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-       android:text="-5 seconds" />
+        <Button
+            android:id="@+id/moreSeconds_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+5 seconds" />
 
+        <Button
+            android:id="@+id/lessSeconds_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-5 seconds"
+            android:layout_marginStart="16dp" />
     </LinearLayout>
 
-
+    <!-- Import CSV Button -->
     <Button
         android:id="@+id/import_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/import_button" />
-
-
+        android:text="@string/import_button"
+        android:layout_marginTop="16dp" />
 </LinearLayout>

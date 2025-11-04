@@ -2,9 +2,30 @@
     <string name="app_name">GeoQuiz</string>
     <string name="true_button">True</string>
     <string name="false_button">False</string>
+    <string name="AButton">A</string>
+    <string name="BButton">B</string>
+    <string name="CButton">C</string>
+    <string name="DButton">D</string>
     <string name="correct_toast">Correct!</string>
     <string name="incorrect_toast">Incorrect!</string>
     <string name="next_button">Next</string>
     <string name="back_button">Back</string>
     <string name="import_button">Import</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <!-- Timer -->
+    <string name="Timer">Timer</string>
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>

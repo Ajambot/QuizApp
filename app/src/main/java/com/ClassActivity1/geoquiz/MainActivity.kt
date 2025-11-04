@@ -5,8 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
-import android.widget.Button
+import android.os.CountDownTimer
 import android.widget.Toast
 import com.ClassActivity1.geoquiz.databinding.ActivityMainBinding
 
@@ -29,6 +28,28 @@ class MainActivity : AppCompatActivity() {
 
     private val PICK_CSV_FILE = 1
 
+    private var countDownTimer: CountDownTimer? = null
+
+    private fun startTimer(){
+        countDownTimer?.cancel()
+        countDownTimer = object : CountDownTimer(answerMS, 1000) {
+            override fun onTick(millisUntilFinished: Long){
+                val secsLeft = ((millisUntilFinished + 999) / 1000).toInt()
+                binding.TimerVar.text = "Time Left $secsLeft s"
+            }
+            override fun onFinish() {
+                binding.TimerVar.text ="Times Up "
+                if(!hasAnswered){
+                    streak = 0.0
+                    Toast.makeText((this@MainActivity), "Ran Out of Time", Toast.LENGTH_SHORT).show()
+                    hasAnswered = true
+
+                }
+            }
+        }.start()
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -36,13 +57,23 @@ class MainActivity : AppCompatActivity() {
 
         //Timer
 
-        binding.trueButton.setOnClickListener {
-            checkQuestion(true)
+        binding.AButton.setOnClickListener {
+            checkQuestion("A")
         }
 
-        binding.falseButton.setOnClickListener {
-            checkQuestion(false)
+        binding.BButton.setOnClickListener {
+            checkQuestion("B")
         }
+
+        binding.CButton.setOnClickListener {
+            checkQuestion("C")
+        }
+
+        binding.DButton.setOnClickListener {
+            checkQuestion("D")
+        }
+
+
 
         binding.nextButton.setOnClickListener {
             if (backwards<0){
@@ -102,6 +133,7 @@ class MainActivity : AppCompatActivity() {
     private var streak = 0.0
     private var hasAnswered = false
     private var backwards = 0
+
     private fun updateQuestion() {
         val questionText = questionBank[currentIndex].text
         binding.questionTextView.text = questionText
@@ -109,11 +141,13 @@ class MainActivity : AppCompatActivity() {
         //TIMER
         if (!hasAnswered) {
             questionStartAt = SystemClock.elapsedRealtime()
+            startTimer()
         }
     }
 
     private fun onUserAnswer(choice:Boolean){
         if (!hasAnswered) {
+            countDownTimer?.cancel()// Stop Countdown.
             val elapsed = SystemClock.elapsedRealtime() - questionStartAt
             var remaining = answerMS - elapsed
             if (remaining + 2000L < 0) {
@@ -180,8 +214,8 @@ class MainActivity : AppCompatActivity() {
             updateQuestion()
         }
     }
-    private fun checkQuestion(choice:Boolean){
-        if(questionBank[currentIndex].answer==choice){
+    private fun checkQuestion(choice: String){
+        if(questionBank[currentIndex].answer.equals(choice)){
             onUserAnswer(true)
             hasAnswered = true
             Toast.makeText(
