@@ -12,18 +12,16 @@ import com.ClassActivity1.geoquiz.databinding.ActivityMainBinding
 
 import kotlin.math.ceil
 import android.os.SystemClock
+import kotlin.reflect.typeOf
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
-    private var questionBank = mutableListOf(
-        Question("Is Australia a country and a continent?", true),
-        Question("Is the Pacific Ocean the largest ocean in the world?", true),
-        Question("Is the Suez Canal in the Middle East?", false),
-        Question("Is the Sahara Desert in Africa?", false),
-        Question("Are the Andes Mountains in the Americas?", true),
-        Question("Is Mount Everest in Asia?", true)
-    )
+    companion object {
+        lateinit var questionBank:MutableList<Question>;
+    }
+
+
     private var currentIndex = 0
 
 
