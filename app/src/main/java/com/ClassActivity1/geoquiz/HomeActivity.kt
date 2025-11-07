@@ -16,6 +16,7 @@ import android.os.SystemClock
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
+    private val PICK_CSV_FILE = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +35,44 @@ class HomeActivity : AppCompatActivity() {
                 Question("Is Mount Everest in Asia?", true)
             );
             MainActivity.questionBank = quiz;
+            startActivity(intent);
+        }
+
+        val importCsv = binding.importCsv;
+        importCsv.setOnClickListener{
+            openFile();
+        }
+    }
+    private fun openFile() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "text/comma-separated-values"
+        }
+        startActivityForResult(intent, PICK_CSV_FILE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PICK_CSV_FILE && resultCode == Activity.RESULT_OK) {
+            data?.data?.also { uri ->
+                loadQuestionsFromCsv(uri)
+            }
+        }
+    }
+
+    private fun loadQuestionsFromCsv(uri: Uri) {
+        val inputStream = contentResolver.openInputStream(uri)
+        inputStream?.bufferedReader()?.useLines { lines ->
+            val newQuestions = lines
+                .map { line ->
+                    val lastCommaIndex = line.lastIndexOf(',')
+                    val questionText = line.substring(0, lastCommaIndex).trim().removeSurrounding("\"")
+                    val answer = line.substring(lastCommaIndex + 1).trim().toBoolean()
+                    Question(questionText, answer)
+                }
+                .toMutableList()
+            MainActivity.questionBank = newQuestions;
+            val intent = Intent(this, MainActivity::class.java);
             startActivity(intent);
         }
     }

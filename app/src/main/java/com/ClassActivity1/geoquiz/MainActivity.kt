@@ -24,9 +24,6 @@ class MainActivity : AppCompatActivity() {
 
     private var currentIndex = 0
 
-
-    private val PICK_CSV_FILE = 1
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -59,6 +56,11 @@ class MainActivity : AppCompatActivity() {
             updateQuestion()
         }
 
+        binding.homeButton.setOnClickListener{
+            val intent = Intent(this, HomeActivity::class.java);
+            startActivity(intent);
+        }
+
         binding.moreSecondsButton.setOnClickListener{
             answerMS+=5000L
             Toast.makeText(
@@ -84,10 +86,6 @@ class MainActivity : AppCompatActivity() {
                 ).show()
             }
 
-        }
-
-        binding.importButton.setOnClickListener {
-            openFile()
         }
 
 
@@ -144,40 +142,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun openFile() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = "text/comma-separated-values"
-        }
-        startActivityForResult(intent, PICK_CSV_FILE)
-    }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PICK_CSV_FILE && resultCode == Activity.RESULT_OK) {
-            data?.data?.also { uri ->
-                loadQuestionsFromCsv(uri)
-            }
-        }
-    }
-
-    private fun loadQuestionsFromCsv(uri: Uri) {
-        val inputStream = contentResolver.openInputStream(uri)
-        inputStream?.bufferedReader()?.useLines { lines ->
-            val newQuestions = lines
-                .map { line ->
-                    val lastCommaIndex = line.lastIndexOf(',')
-                    val questionText = line.substring(0, lastCommaIndex).trim().removeSurrounding("\"")
-                    val answer = line.substring(lastCommaIndex + 1).trim().toBoolean()
-                    Question(questionText, answer)
-                }
-                .toList()
-            questionBank.clear()
-            questionBank.addAll(newQuestions)
-            currentIndex = 0
-            updateQuestion()
-        }
-    }
     private fun checkQuestion(choice:Boolean){
         if(questionBank[currentIndex].answer==choice){
             onUserAnswer(true)
