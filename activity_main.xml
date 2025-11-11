@@ -2,87 +2,85 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="24dp">
-
-    <!--Timer -->
+    android:padding="24dp"
+    android:gravity="center_horizontal"
+    tools:context=".MainActivity">
+    <!-- Quiz Title -->
     <TextView
-        android:id="@+id/TimerVar"
-        android:layout_width="422dp"
-        android:layout_height="115dp"
-        tools:text=""
-        android:gravity="center"
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kotlin Quiz"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
+        android:textColor="@android:color/black" />
+    <TextView
+        android:layout_width="313dp"
+        android:layout_height="54dp"
+        android:layout_marginBottom="16dp"
+        android:text="ADD TIMER Variable"
         android:textColor="@android:color/black"
-        android:textSize="40sp"
-        />
-
+        android:textSize="26sp"
+        android:textStyle="bold" />
     <!-- Question Text -->
     <TextView
-        android:id="@+id/question_text_view"
-        android:layout_width="400dp"
-        android:layout_height="104dp"
-        android:gravity="center"
-        android:padding="24dp"
-        android:textColor="@android:color/black"
+        android:id="@+id/tvQuestion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Question will appear here"
         android:textSize="18sp"
-        tools:text="@string/question_australia" />
+        android:layout_marginBottom="16dp" />
 
-    <!-- RadioGroup with RadioButtons -->
-    <GridLayout
+    <!-- Options -->
+    <RadioGroup
         android:id="@+id/rgOptions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rbOption1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Option 1" />
+
+        <RadioButton
+            android:id="@+id/rbOption2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Option 2" />
+
+        <RadioButton
+            android:id="@+id/rbOption3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Option 3" />
+
+        <RadioButton
+            android:id="@+id/rbOption4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Option 4" />
+    </RadioGroup>
+
+    <!-- Next Button -->
+    <Button
+        android:id="@+id/btnNext"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:columnCount="2"
-        android:rowCount="2"
-        android:orientation="horizontal"
-        android:layout_marginTop="25dp">
+        android:text="Next"
+        android:layout_marginTop="24dp" />
 
-        <RadioButton
-            android:id="@+id/AButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/AButton" />
-
-        <RadioButton
-            android:id="@+id/BButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/BButton" />
-
-        <RadioButton
-            android:id="@+id/CButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/CButton" />
-
-        <RadioButton
-            android:id="@+id/DButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/DButton" />
-    </GridLayout>
-
-    <!-- Navigation Buttons -->
-    <LinearLayout
+    <RadioButton
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="16dp">
+        android:layout_height="48dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="140dp"
+        android:text="Settings" />
 
-        <Button
-            android:id="@+id/back_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/back_button" />
 
-        <Button
-            android:id="@+id/next_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/next_button"
-            android:layout_marginStart="16dp" />
-    </LinearLayout>
 </LinearLayout>
