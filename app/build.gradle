@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -7,12 +10,20 @@ android {
     namespace 'com.ClassActivity1.geoquiz'
     compileSdk 36
 
+    def localProp = new Properties()
+    def localPropFile = rootProject.file("local.properties")
+    if (localPropFile.exists()) {
+        localProp.load(new FileInputStream(localPropFile))
+    }
+    def geminiKey = localProp.getProperty("GEMINI_API_KEY","")
+
     defaultConfig {
         applicationId "com.ClassActivity1.geoquiz"
-        minSdk 21
-        targetSdk 34
+        minSdk 25
+        targetSdk 33
         versionCode 1
         versionName "1.0"
+        buildConfigField("String", "GEMINI_API_KEY", "\"${geminiKey}\"")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

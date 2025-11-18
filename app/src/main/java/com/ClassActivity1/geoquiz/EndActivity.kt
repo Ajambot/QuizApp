@@ -14,11 +14,12 @@ class EndActivity : AppCompatActivity() {
         binding = ActivityEndScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val finalScore = intent.getIntExtra("score", 0)
-        binding.scoreTextView.text = "Score: $finalScore"
+        val finalScore = intent.getDoubleExtra("SCORE", 42.0)
+        binding.scoreTextView.text = "Score: ${finalScore.toInt()}"
 
         // BACK → Return to MainActivity (previous quiz)
         binding.Restart.setOnClickListener {
+            MainActivity.answeredQuestions.clear()
             val i = Intent(this, MainActivity::class.java)
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(i)
@@ -27,7 +28,13 @@ class EndActivity : AppCompatActivity() {
 
         // 4. Exit app
         binding.exitButton.setOnClickListener {
-            finishAffinity()   // closes the entire app cleanly
+            MainActivity.answeredQuestions.clear()
+            val i = Intent(this, HomeActivity::class.java)
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) // launches a new intent instead of same one again
+            startActivity(i)
+            finish()
         }
     }
 }
+
+

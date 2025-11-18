@@ -1,5 +1,6 @@
 package com.ClassActivity1.geoquiz
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -62,9 +63,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+
+
+
 
 
         // If no questions were loaded (for testing), add 1 default question
@@ -104,6 +108,11 @@ class MainActivity : AppCompatActivity() {
                 // Move to next question, wrap around if at end
                 updateQuestion()
             }
+         else if (currentIndex >= numQuestions - 1) {
+            // Navigate to EndActivity when quiz is complete
+                val intent = Intent(this, EndActivity::class.java).apply{putExtra("SCORE",score)}
+            startActivity(intent)
+        }
         }
 
         // "Back" button: go to previous question
@@ -125,7 +134,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Pops up a confirmation dialog when the user tries to leave the quiz
-    private fun showExitDialog() {
+     fun showExitDialog() {
         val dialog= AlertDialog.Builder(this)
             .setTitle("Exit Quiz")
             .setMessage("Are you sure you want to exit the quiz?")
@@ -144,6 +153,9 @@ class MainActivity : AppCompatActivity() {
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(Color.RED)
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(Color.GRAY)
     }
+
+
+
 
     // Called when the user taps one of the answer choices
     private fun onChoiceClicked(letter: String) {
