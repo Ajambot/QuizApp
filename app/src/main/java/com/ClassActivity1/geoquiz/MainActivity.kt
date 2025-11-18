@@ -67,21 +67,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
 
-
-
-
-
-        // If no questions were loaded (for testing), add 1 default question
-        if (questionBank.isEmpty()) {
-            questionBank = mutableListOf(
-                Question(
-                    text = "Test Question: No CSV or prompt provided.",
-                    answer = "A",
-                    options = listOf("Option A", "Option B", "Option C", "Option D")
-                )
-            )
-        }
-
         // Randomize questions if setting is turned on
         if (randomOrder) {
             questionBank.shuffle()
@@ -126,6 +111,7 @@ class MainActivity : AppCompatActivity() {
 
         // Exit button: confirm before closing the quiz
         binding.exitButton.setOnClickListener {
+            questionBank.clear()
             showExitDialog()
         }
 

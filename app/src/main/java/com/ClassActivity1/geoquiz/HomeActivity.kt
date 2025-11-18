@@ -1,6 +1,7 @@
 package com.ClassActivity1.geoquiz
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -22,8 +23,6 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private var csvUri: Uri? = null
 
-
-
     private val PICK_CSV_FILE = 1
     private val SETTINGS_REQUEST = 2
     private var pendingCsvText: String? = null
@@ -32,10 +31,10 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        questionBank.clear()
+        //questionBank.clear() // clear the question bank  so exit needs new question
 
         //AI PART
-        //ill try and add logic to count csv lines and end there
-
         // Import CSV
         binding.importButton.setOnClickListener { openFile() }
 
@@ -109,19 +108,17 @@ class HomeActivity : AppCompatActivity() {
         }
 
     private fun addQuestionsFromApi() {
-        val numQuestions =
-            MainActivity.questionsPerPrompt //How many questions to generate (pulled from MainActivities companion object)
-        val topic = binding.promptEditText.text.toString().trim()
-            .ifBlank { "The beauties of Kotlin" } //reads the text in the text field, trims spaces, and if nothing is put in place it defaults to the beauties of kotlin (which should not be possible, but just in case)
+        val numQuestions = MainActivity.questionsPerPrompt //How many questions to generate (pulled from MainActivities companion object)
+        val topic = binding.promptEditText.text.toString().trim().ifBlank {"The beauties of Kotlin"} //reads the text in the text field, trims spaces, and if nothing is put in place it defaults to the beauties of kotlin (which should not be possible, but just in case)
         //Model used and linking to the hidden API key (its safer then leaving it in the code)
         val generativeModel = GenerativeModel(
             modelName = "gemini-2.0-flash",
             apiKey = BuildConfig.GEMINI_API_KEY,
         )
-        val deviceTime = SimpleDateFormat(
+        val deviceTime =SimpleDateFormat(
             "yyyyMMddHHmmss", //formats date and time
         ).format(Date())
-        //We have to be VERY specific, its not perfect, but its pretty good at getting gemini to give us what we want
+        //We have to be VERYY specific, its not perfect, but its pretty good at getting gemini to give us what we want
         val promptG =
             """
             Generate $numQuestions multiple-choice $topic questions in CSV format.
@@ -129,12 +126,10 @@ class HomeActivity : AppCompatActivity() {
             question,optionA,optionB,optionC,optionD,correctOption.
             HARD RULES:
             - Each line must have exactly 6 fields separated by commas.
-            - No header, no numbering, no quotes, no explanation.
-            - DO NOT use commas inside any field except as separators. 
+            - No header, no mumbering, no quotes, no explanation.
+            - DO NOT use commas inside any field except as seperators. 
             - Output ONLY $numQuestions CSV Lines.
-            - CorrectOption must be exactly one of: A, B, C, or D 
-            - For every question in the Quiz Make sure the answers are Randomly distributed all four options making sure each question has a 25% chance of having the answer A,B,C,D
-            
+            - CorrectOption must be exactly one of: A, B, C, or D
             """.trimIndent()
 
         //Coroutine to call Gemini off the main thread
@@ -148,23 +143,19 @@ class HomeActivity : AppCompatActivity() {
                 //Log.d("HomeActivity", "API Raw CSV: \n $raw")
 
                 //Splits the questions by newlines, trim spaces, drop blank lines, and makes sure not to give more questions then the user asked for
-                val lines = raw.lines().map { it.trim() }.filter { it.isNotEmpty() }
-                    .take(numQuestions) //just as a fail safe to the prompt giving more
-                val csvText =
-                    lines.joinToString("\n") //joins back into a csv format, basically adds \n at the end of each question section
+                val lines = raw.lines().map{it.trim()}.filter{ it.isNotEmpty()}.take(numQuestions) //just as a fail safe to the prompt giving more
+                val csvText = lines.joinToString("\n") //joins back into a csv format, basically adds \n at the end of each question section
                 //Log.d("MainActivity", "Final CSV text:\n$csvText")
 
-                pendingCsvText =
-                    csvText //store the CSV as a text so that the file saver can access it
+                pendingCsvText = csvText //store the CSV as a text so that the file saver can access it
                 createCsvFileLauncher.launch("quiz$deviceTime.csv") //names it with device time as making duplicate quizzes causes issues
 
             } catch (e: Exception) {
-                //Log.e("HomeActivity", "API Error", e)
-                Toast.makeText(
-                    this@HomeActivity,
-                    "Failed to load new questions. ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                AlertDialog.Builder(this@HomeActivity)
+                    .setTitle("Error")
+                    .setMessage("Failed to load new questions.\n\n${e.message}\n\n${e.stackTraceToString()}")
+                    .setPositiveButton("OK", null)
+                    .show()
             }
         }
     }

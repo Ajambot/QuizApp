@@ -30,9 +30,6 @@
         <activity
             android:name=".SettingsActivity"
             android:exported="false" />
-        <activity
-            android:name=".EndActivity"
-            android:exported="false" /> <!-- Settings Activity -->
     </application>
 
 </manifest>
