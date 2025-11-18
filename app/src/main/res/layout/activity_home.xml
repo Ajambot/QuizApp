@@ -1,29 +1,163 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center">
+    android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/PromptEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:autofillHints=""
-        android:hint="Enter a prompt..."
-        android:minHeight="48dp" />
+    <!-- Background Image (FULL SCREEN) -->
+    <ImageView
+        android:id="@+id/background"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        android:adjustViewBounds="true"
+        android:src="@drawable/home_background"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/importButton"
-        android:text="Import CSV"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp" />
+    <!-- Title Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/TitleCard"
+        android:layout_width="355dp"
+        android:layout_height="151dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginTop="60dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="10dp"
+        app:cardUseCompatPadding="true"
+        app:cardBackgroundColor="#0B1120"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <Button
-        android:id="@+id/startQuizButton"
-        android:text="Start Quiz"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp" />
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/homeTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quiz App"
+                android:textColor="#FFFFFF"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
+
+            <TextView
+                android:id="@+id/homeSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Load questions and start your quiz!"
+                android:textColor="#D1D5DB"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Main Interaction Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/homeCard"
+        android:layout_width="354dp"
+        android:layout_height="400dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        app:cardBackgroundColor="#0B1120"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="10dp"
+        app:cardUseCompatPadding="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/TitleCard">
+
+        <LinearLayout
+            android:layout_width="324dp"
+            android:layout_height="335dp"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+
+
+
+            <!-- Prompt input -->
+            <EditText
+                android:id="@+id/promptEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:background="@android:drawable/edit_text"
+                android:backgroundTint="#127369"
+                android:hint="Enter a prompt..."
+                android:padding="12dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#D1D5DB"
+                android:textSize="16sp" />
+
+            <!-- Start Quiz -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/startQuizButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="#6366F1"
+                android:text="Start Quiz"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                app:cornerRadius="999dp" />
+
+            <!-- Import CSV -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/promptButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="#10B981"
+                android:text="Generate Quiz"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                app:cornerRadius="999dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/importButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="#10B981"
+                android:text="Import CSV"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                app:cornerRadius="999dp" />
+
+
+
+            <!-- Settings -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/settingsButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:backgroundTint="#6366F1"
+                android:text="Settings"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                app:cornerRadius="999dp" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,237 +1,328 @@
 package com.ClassActivity1.geoquiz
 
-import android.app.Activity
-import android.content.Intent
-import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.widget.Toast
-import com.ClassActivity1.geoquiz.databinding.ActivityMainBinding
-
-import kotlin.math.ceil
 import android.os.SystemClock
+import android.widget.ImageView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import com.ClassActivity1.geoquiz.databinding.ActivityMainBinding
+import android.widget.TextView
+import kotlin.math.ceil
 
 class MainActivity : AppCompatActivity() {
+
+    // ViewBinding for activity_main.xml
     private lateinit var binding: ActivityMainBinding
 
-    private var questionBank = mutableListOf(
-        Question("Is Australia a country and a continent?", true),
-        Question("Is the Pacific Ocean the largest ocean in the world?", true),
-        Question("Is the Suez Canal in the Middle East?", false),
-        Question("Is the Sahara Desert in Africa?", false),
-        Question("Are the Andes Mountains in the Americas?", true),
-        Question("Is Mount Everest in Asia?", true)
-    )
+
+    companion object {
+        var numQuestions: Int = 0
+
+        // This will be filled from HomeActivity after the CSV is loaded
+        var questionBank: MutableList<Question> = mutableListOf()
+
+        // How long the user has to answer each question (in ms)
+        var answerMs: Long = 20_000L
+
+        // If true, we shuffle question order once at the start
+        var randomOrder: Boolean = true
+
+        //How many questions to request/generate per prompt
+        var questionsPerPrompt: Int=10
+        //List of answer questions index to prevent re answering questions
+        var answeredQuestions: MutableSet<Int> = mutableSetOf()
+    }
+
+    // Index of the current question in the questionBank
     private var currentIndex = 0
 
-
-    private val PICK_CSV_FILE = 1
-
+    // Single CountDownTimer instance for the current question
     private var countDownTimer: CountDownTimer? = null
 
-    private fun startTimer(){
-        countDownTimer?.cancel()
-        countDownTimer = object : CountDownTimer(answerMS, 1000) {
-            override fun onTick(millisUntilFinished: Long){
-                val secsLeft = ((millisUntilFinished + 999) / 1000).toInt()
-                binding.TimerVar.text = "Time Left $secsLeft s"
-            }
-            override fun onFinish() {
-                binding.TimerVar.text ="Times Up "
-                if(!hasAnswered){
-                    streak = 0.0
-                    Toast.makeText((this@MainActivity), "Ran Out of Time", Toast.LENGTH_SHORT).show()
-                    hasAnswered = true
+    // Which choice (A/B/C/D) the user picked on this question
+    private var selectedChoice: String? = null
 
-                }
-            }
-        }.start()
+    // Timestamp (in uptime ms) when the current question started
+    private var questionStartAt = 0L
 
-    }
+    // Total score across all questions in this run
+    private var score: Double = 0.0
+
+    // Streak of correct answers in a row; used as a multiplier
+    private var streak = 0.0
+
+    // True as soon as the user has answered (or time runs out) for this question
+    private var hasAnswered = false
+
+    // Tracks how many times user has moved backwards through questions
+    // Used to prevent abusing forward navigation to re-answer
+    private var backwards = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //Timer
 
-        binding.AButton.setOnClickListener {
-            checkQuestion("A")
+        // If no questions were loaded (for testing), add 1 default question
+        if (questionBank.isEmpty()) {
+            questionBank = mutableListOf(
+                Question(
+                    text = "Test Question: No CSV or prompt provided.",
+                    answer = "A",
+                    options = listOf("Option A", "Option B", "Option C", "Option D")
+                )
+            )
         }
 
-        binding.BButton.setOnClickListener {
-            checkQuestion("B")
-        }
-
-        binding.CButton.setOnClickListener {
-            checkQuestion("C")
-        }
-
-        binding.DButton.setOnClickListener {
-            checkQuestion("D")
+        // Randomize questions if setting is turned on
+        if (randomOrder) {
+            questionBank.shuffle()
         }
 
 
+        // Initial UI setup
+        binding.scoreTextView.text = "Score: 0"
+        binding.feedbackTextView.text = ""
 
+        // Hook up the answer buttons (A/B/C/D)
+        binding.AButton.setOnClickListener { onChoiceClicked("A") }
+        binding.BButton.setOnClickListener { onChoiceClicked("B") }
+        binding.CButton.setOnClickListener { onChoiceClicked("C") }
+        binding.DButton.setOnClickListener { onChoiceClicked("D") }
+
+        // "Next" button: move forward through questions
         binding.nextButton.setOnClickListener {
-            if (backwards<0){
-                backwards+=1
+            // If user was going backwards, reduce that counter until we reach 0 again
+            if (currentIndex < numQuestions - 1) {
+                currentIndex++
+                hasAnswered = false
+
+                // Move to next question, wrap around if at end
+                updateQuestion()
             }
-            else{
-                hasAnswered=false //to track if a questions been answered
-            }
-            currentIndex = (currentIndex + 1) % questionBank.size
-            updateQuestion()
         }
 
+        // "Back" button: go to previous question
         binding.backButton.setOnClickListener {
-            backwards-=1
-            currentIndex = if (currentIndex > 0) (currentIndex - 1) else questionBank.size - 1
-            updateQuestion()
-        }
-
-        binding.moreSecondsButton.setOnClickListener{
-            answerMS+=5000L
-            Toast.makeText(
-                this,
-                "Time Per Question: $answerMS",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-        binding.lessSecondsButton.setOnClickListener{
-            if (answerMS>5000L) {
-                answerMS -= 5000L
-                Toast.makeText(
-                    this,
-                    "Time Per Question: $answerMS",
-                    Toast.LENGTH_SHORT
-                ).show()
+            if (currentIndex > 0) {
+                currentIndex--
+                hasAnswered = true
+                updateQuestion()
             }
-            else{
-                Toast.makeText(
-                    this,
-                    "Cannot go below: $answerMS",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-
         }
 
-        binding.importButton.setOnClickListener {
-            openFile()
+        // Exit button: confirm before closing the quiz
+        binding.exitButton.setOnClickListener {
+            showExitDialog()
         }
 
-
+        // Load the very first question
         updateQuestion()
     }
 
-    private var answerMS = 20000L
-    private var questionStartAt = 0L
-    private var score:Double = 0.0
-    private var streak = 0.0
-    private var hasAnswered = false
-    private var backwards = 0
+    // Pops up a confirmation dialog when the user tries to leave the quiz
+    private fun showExitDialog() {
+        val dialog= AlertDialog.Builder(this)
+            .setTitle("Exit Quiz")
+            .setMessage("Are you sure you want to exit the quiz?")
+            .setPositiveButton("Exit") { _, _ -> //using lambda with no paramaters or values, hence _,_
+                // Stop timer and close the activity
+                countDownTimer?.cancel()
+                finish()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+        //makes message black
+        dialog.findViewById<TextView>(android.R.id.message)?.setTextColor(Color.BLACK)
+        dialog.findViewById<TextView>(android.R.id.title)?.setTextColor(Color.BLACK)
 
+        //makes buttons black
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(Color.RED)
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(Color.GRAY)
+    }
+
+    // Called when the user taps one of the answer choices
+    private fun onChoiceClicked(letter: String) {
+        // Visually mark that choice as selected
+        selected(letter)
+        // Check whether it's correct or not
+        checkQuestion(letter)
+    }
+
+    // Enable/disable all four answer buttons at once
+    private fun setOptions(enabled: Boolean) {
+        listOf(binding.AButton, binding.BButton, binding.CButton, binding.DButton).forEach {
+            it.isEnabled = enabled
+        }
+    }
+
+    // Update radio buttons so the chosen one appears selected
+    private fun selected(choice: String) {
+        selectedChoice = choice
+
+        val map = mapOf(
+            "A" to binding.AButton,
+            "B" to binding.BButton,
+            "C" to binding.CButton,
+            "D" to binding.DButton,
+        )
+
+        // For each button, highlight only the one matching `choice`
+        map.forEach { (key, btn) ->
+            val isSelected = key == choice
+            btn.isSelected = isSelected
+            btn.isPressed = isSelected
+            btn.isChecked = isSelected
+            // Slightly fade out the non-selected options
+            btn.alpha = if (isSelected) 1f else 0.6f
+        }
+    }
+
+    // Starts (or restarts) the countdown for the current question
+    private fun startTimer() {
+        // Cancel any previous timer to avoid multiple timers running
+        countDownTimer?.cancel()
+
+        countDownTimer = object : CountDownTimer(answerMs, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                // Round up remaining time to seconds
+                val secsLeft = ((millisUntilFinished + 999) / 1000).toInt()
+                binding.TimerVar.text = "Time Left: ${secsLeft}s"
+            }
+
+            override fun onFinish() {
+                // Timer reached zero
+                binding.TimerVar.text = "Time Left: 0s"
+                if (!hasAnswered) {
+                    // If the user still hasn't answered, count as timed out
+                    streak = 0.0
+                    hasAnswered = true
+                    setOptions(false)
+                    binding.feedbackTextView.text = "Time's up!"
+                    binding.feedbackTextView.setTextColor(Color.parseColor("#DC2626"))
+                }
+            }
+        }.start()
+    }
+
+    // Load and display the current question on screen
     private fun updateQuestion() {
-        val questionText = questionBank[currentIndex].text
-        binding.questionTextView.text = questionText
+        val question = questionBank[currentIndex]
 
-        //TIMER
-        if (!hasAnswered) {
+        // Set the question text
+        binding.questionTextView.text = question.text
+
+        // Fill in the four options, if present
+        if (question.options.size >= 4) {
+            binding.AButton.text = question.options[0]
+            binding.BButton.text = question.options[1]
+            binding.CButton.text = question.options[2]
+            binding.DButton.text = question.options[3]
+        }
+
+        // Disable options if already answered
+        val alreadyAnswered = answeredQuestions.contains(currentIndex)
+        setOptions(!alreadyAnswered)
+
+        if (!alreadyAnswered) {
+            // If the user hasn’t already answered, start timing this question
             questionStartAt = SystemClock.elapsedRealtime()
             startTimer()
-        }
-    }
 
-    private fun onUserAnswer(choice:Boolean){
-        if (!hasAnswered) {
-            countDownTimer?.cancel()// Stop Countdown.
-            val elapsed = SystemClock.elapsedRealtime() - questionStartAt
-            var remaining = answerMS - elapsed
-            if (remaining + 2000L < 0) {
-                remaining = 0
-            }
-            if (remaining + 2000L > answerMS) {
-                remaining = answerMS
+            // Reset selection state for the new question
+            selectedChoice = null
+            listOf(binding.AButton, binding.BButton, binding.CButton, binding.DButton).forEach {
+                it.isSelected = false
+                it.isPressed = false
+                it.isChecked = false
+                it.alpha = 1f
             }
 
-            val secsLeft = ((remaining + 999) / 1000).toInt()
-            val percentageTime = (remaining * 1.0) / (answerMS * 1.0)
-            if (choice && remaining > 0) {
-                val pointsEarned =
-                    ceil(percentageTime) * 100.0 * (1.0 + streak / 10.0) //add 10% extra per streak
-                score += pointsEarned
-                streak += 1
-                Toast.makeText(
-                    this,
-                    "Time Left: $secsLeft, Score: $score, Streak: $streak",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                val pointsEarned = 0
-                streak = 0.0 //set streak to 0 on incorrect answer
-                if (remaining.toInt() == 0) {
-                    Toast.makeText(this, "Ran Out of Time", Toast.LENGTH_SHORT).show()
-                }
-
-            }
-        }
-    }
-
-    private fun openFile() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = "text/comma-separated-values"
-        }
-        startActivityForResult(intent, PICK_CSV_FILE)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PICK_CSV_FILE && resultCode == Activity.RESULT_OK) {
-            data?.data?.also { uri ->
-                loadQuestionsFromCsv(uri)
-            }
-        }
-    }
-
-    private fun loadQuestionsFromCsv(uri: Uri) {
-        val inputStream = contentResolver.openInputStream(uri)
-        inputStream?.bufferedReader()?.useLines { lines ->
-            val newQuestions = lines
-                .map { line ->
-                    val lastCommaIndex = line.lastIndexOf(',')
-                    val questionText = line.substring(0, lastCommaIndex).trim().removeSurrounding("\"")
-                    val answer = line.substring(lastCommaIndex + 1).trim().toBoolean()
-                    Question(questionText, answer)
-                }
-                .toList()
-            questionBank.clear()
-            questionBank.addAll(newQuestions)
-            currentIndex = 0
-            updateQuestion()
-        }
-    }
-    private fun checkQuestion(choice: String){
-        if(questionBank[currentIndex].answer.equals(choice)){
-            onUserAnswer(true)
+            // Clear any previous "Correct/Incorrect" message
+            binding.feedbackTextView.text = ""
+            binding.feedbackTextView.setTextColor(Color.parseColor("#111827"))
+            hasAnswered = false
+        } else {
+            // If already answered, show feedback and disable timer
             hasAnswered = true
-            Toast.makeText(
-                this,
-                R.string.correct_toast,
-                Toast.LENGTH_SHORT
-            ).show()
+            binding.feedbackTextView.text = "Already answered. Correct: ${question.answer}"
+            binding.feedbackTextView.setTextColor(Color.parseColor("#16A34A"))
+            binding.TimerVar.text = "Time Left: 0s"
         }
-        else{
-            onUserAnswer(false)
-            hasAnswered=true
-            Toast.makeText(
-                this,
-                R.string.incorrect_toast,
-                Toast.LENGTH_SHORT
-            ).show()
+    }
+
+
+    // Handles scoring and feedback for a user's answer
+    private fun onUserAnswer(isCorrect: Boolean) {
+        // Only handle the answer once
+        if (!hasAnswered) {
+            // Stop the timer so it doesn't keep ticking
+            countDownTimer
+            countDownTimer?.cancel()
+
+            // How long the user took on this question
+            val elapsed = SystemClock.elapsedRealtime() - questionStartAt
+            var remaining = answerMs - elapsed
+            //if (remaining + 2000L > answerMs) remaining = answerMs
+
+            val secsLeft = ((remaining + 999) / 1000).toInt() //calculates seconds left (adds 999 so it always shows the second rounded up to the nearest int)
+            if (remaining + 3000L > answerMs) remaining = answerMs //for calculating score we add 3 seconds to give them some leeway
+            val percentageTime = (remaining * 1.0) / (answerMs * 1.0) //percentage of time left
+
+            if (isCorrect && remaining > 0) {
+                //Score formula:
+                //base 100 points * percentage of time left (with the 3 second leeway) +10 extra per streak bonus
+                val pointsEarned = percentageTime * 100.0 * (1.0 + streak / 10.0)
+                score += pointsEarned
+                streak += 1.0
+
+                //Positive answer message sent to user
+                binding.feedbackTextView.text =
+                    "Correct! +${pointsEarned.toInt()} (Time left: ${secsLeft}s)"
+                binding.feedbackTextView.setTextColor(Color.parseColor("#16A34A"))
+            } else {
+                //On timeout resets the streak and indicates the questions answered incorrectly
+                streak = 0.0
+                if (remaining.toInt() == 0) {
+                    binding.feedbackTextView.text = "Time's up!"
+                } else {
+                    binding.feedbackTextView.text = "Incorrect, the answer was ${questionBank[currentIndex].answer}"
+                }
+                binding.feedbackTextView.setTextColor(Color.parseColor("#DC2626"))
+            }
+
+            //Update score display (makes it an integer)
+            binding.scoreTextView.text = "Score: ${score.toInt()}"
         }
+    }
+
+    // Check if the selected letter matches the correct answer for this question
+    private fun checkQuestion(choiceLetter: String) {
+        // Don't re-check if we've already locked in this question
+        if (hasAnswered) return
+
+        val correctLetter = questionBank[currentIndex].answer
+        // Compare letters ignoring case (in case CSV uses lower/upper)
+        val isCorrect = correctLetter.equals(choiceLetter, ignoreCase = true)
+
+        // This will update score, streak, and feedback text
+        onUserAnswer(isCorrect)
+        hasAnswered = true
+
+        // Disable answer buttons so user can't change after seeing result
+        setOptions(false)
+
+        //Add question index to track answered questions
+        answeredQuestions.add(currentIndex)
+    }
+
+    // Clean up timer if the activity is destroyed (e.g., user leaves)
+    override fun onDestroy() {
+        super.onDestroy()
+        countDownTimer?.cancel()
     }
 }
